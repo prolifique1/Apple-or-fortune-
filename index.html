@@ -1,0 +1,144 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apple of Fortune - Prolifique</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#e60000"/>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #111;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+        h1 {
+            color: #e60000;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(5, 60px);
+            gap: 10px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+        .cell {
+            width: 60px;
+            height: 60px;
+            background-color: #222;
+            border: 2px solid #e60000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            cursor: pointer;
+        }
+        .disabled {
+            pointer-events: none;
+            opacity: 0.4;
+        }
+        .message {
+            margin-top: 20px;
+            font-size: 18px;
+        }
+        button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #e60000;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Apple of Fortune - Prolifique</h1>
+    <div id="grid" class="grid"></div>
+    <div class="message" id="message">Choisis une case de la première ligne</div>
+    <button onclick="resetGame()">Rejouer</button>
+
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('service-worker.js');
+        }
+
+        const grid = document.getElementById('grid');
+        const message = document.getElementById('message');
+        let currentRow = 0;
+        let maxRows = 5;
+        let columns = 5;
+        let gameOver = false;
+
+        let appleMap = Array.from({ length: maxRows }, () =>
+            Array.from({ length: columns }, () =>
+                Math.random() < 0.7 ? "🍎" : "🍏"
+            )
+        );
+
+        function createGrid() {
+            grid.innerHTML = "";
+            for (let row = 0; row < maxRows; row++) {
+                for (let col = 0; col < columns; col++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    cell.dataset.row = row;
+                    cell.dataset.col = col;
+                    if (row === currentRow && !gameOver) {
+                        cell.onclick = () => clickCell(row, col, cell);
+                    } else {
+                        cell.classList.add('disabled');
+                    }
+                    grid.appendChild(cell);
+                }
+            }
+        }
+
+        function clickCell(row, col, cell) {
+            if (gameOver) return;
+            const value = appleMap[row][col];
+            cell.textContent = value;
+            cell.classList.add('disabled');
+            if (value === "🍏") {
+                message.textContent = "Pomme croquée ! Tu as perdu.";
+                gameOver = true;
+                revealGrid();
+            } else {
+                currentRow++;
+                if (currentRow >= maxRows) {
+                    message.textContent = "Félicitations ! Tu as gagné !";
+                    gameOver = true;
+                } else {
+                    message.textContent = `Bien joué ! Choisis une case de la ligne ${currentRow + 1}`;
+                }
+                createGrid();
+            }
+        }
+
+        function revealGrid() {
+            const cells = document.querySelectorAll('.cell');
+            cells.forEach(cell => {
+                const r = cell.dataset.row;
+                const c = cell.dataset.col;
+                cell.textContent = appleMap[r][c];
+            });
+        }
+
+        function resetGame() {
+            currentRow = 0;
+            gameOver = false;
+            message.textContent = "Choisis une case de la première ligne";
+            appleMap = Array.from({ length: maxRows }, () =>
+                Array.from({ length: columns }, () =>
+                    Math.random() < 0.7 ? "🍎" : "🍏"
+                )
+            );
+            createGrid();
+        }
+
+        createGrid();
+    </script>
+</body>
+</html>

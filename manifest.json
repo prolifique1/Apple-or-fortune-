@@ -1,0 +1,10 @@
+
+{
+  "name": "Apple of Fortune - Prolifique",
+  "short_name": "AppleProlifique",
+  "start_url": "apple_of_fortune_pwa.html",
+  "display": "standalone",
+  "background_color": "#111111",
+  "theme_color": "#e60000",
+  "icons": []
+}
